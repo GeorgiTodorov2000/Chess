@@ -25,5 +25,10 @@ public class King {
             g.setColor(Color.GREEN);
             g.fillRect(tileX + 25, tileY + 25, 50, 50);
         }
+
+    }
+    public void move(int row, int col) {
+        this.row = row;
+        this.col = col;
     }
 }

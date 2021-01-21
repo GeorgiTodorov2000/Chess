@@ -3,21 +3,24 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 public class GameTile {
+
+    public static final int TILE_SIZE = 100;
+
+
     private int row;
     private int col;
-    private int tileSize;
+
 
 
     public GameTile(int row, int col) {
         this.row = row;
         this.col = col;
 
-        this.tileSize = 100;
     }
 
     public void render(Graphics g) {
-        int tileX = this.col * this.tileSize;
-        int tileY = this.row * this.tileSize;
+        int tileX = this.col * this.TILE_SIZE;
+        int tileY = this.row * this.TILE_SIZE;
         g.setColor(Color.BLACK);
         g.drawRect(100, 100, 500, 500);
         g.drawRect(100, 300, 500, 100);
@@ -37,6 +40,6 @@ public class GameTile {
         }
 
 
-        g.fillRect(tileX, tileY, this.tileSize, this.tileSize);
+        g.fillRect(tileX, tileY, this.TILE_SIZE, this.TILE_SIZE);
     }
 }

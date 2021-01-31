@@ -2,27 +2,49 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Random;
 
 public class GameBoard extends JFrame implements MouseListener {
     public static final int TILE_SIDE_COUNT = 7;
     private Object[][] pieceCollection;
     private Object selectedPiece;
-    public int OriginalRow = 0;
-    public int OriginalCol = 0;
-
     public GameBoard() {
-    //TODO Намери решение за "лидера". Дава грешка защото се опитваш да го направиш Guard!!
+
         this.pieceCollection = new Object[TILE_SIDE_COUNT][TILE_SIDE_COUNT];
-        this.pieceCollection[1][1]=(new Guard(1, 1, Color.GREEN, Color.YELLOW));
-        this.pieceCollection[1][2]=(new Guard(1, 2, Color.GREEN, Color.YELLOW));
-        this.pieceCollection[1][3]=(new Guard(1, 3, Color.GREEN, Color.YELLOW));
-        this.pieceCollection[1][4]=(new Guard(1, 4, Color.GREEN, Color.YELLOW));
-//        this.pieceCollection[1][5]=(new King(1, 5));
-//        this.pieceCollection[5][1]=(new King(5, 1));
-        this.pieceCollection[5][2]=(new Guard(5, 2, Color.YELLOW, Color.GREEN));
-        this.pieceCollection[5][3]=(new Guard(5, 3, Color.YELLOW, Color.GREEN));
-        this.pieceCollection[5][4]=(new Guard(5, 4, Color.YELLOW, Color.GREEN));
-        this.pieceCollection[5][5]=(new Guard(5, 5, Color.YELLOW, Color.GREEN));
+        Random random = new Random();
+
+        int turtleCount = 0;
+        while (turtleCount != 2) {
+            int i = random.nextInt(5);
+            i++;
+            if(this.hasBoardPiece(3, i) && i != 5) {
+                i++;
+            } else if (this.hasBoardPiece(3, i) && i == 5) {
+                i = random.nextInt(5);
+                i++;
+            }
+
+            if (i == 3) {
+                this.pieceCollection[3][++i] = (new Turtle(3, ++i, Color.RED, Color.WHITE, 3));
+            } else {
+                this.pieceCollection[3][i] = (new Turtle(3, i, Color.RED, Color.WHITE, 3));
+            }
+            System.out.println(3 + "" + i);
+            ++turtleCount;
+
+        }
+
+
+        this.pieceCollection[1][1]=(new Guard(1, 1, Color.GREEN, Color.YELLOW, 1));
+        this.pieceCollection[1][2]=(new Guard(1, 2, Color.GREEN, Color.YELLOW,1));
+        this.pieceCollection[1][3]=(new Guard(1, 3, Color.GREEN, Color.YELLOW,1));
+        this.pieceCollection[1][4]=(new Guard(1, 4, Color.GREEN, Color.YELLOW,1));
+        this.pieceCollection[1][5]=(new King(1, 5,Color.YELLOW, null, 2));
+        this.pieceCollection[5][1]=(new King(5, 1,Color.GREEN, null, 2));
+        this.pieceCollection[5][2]=(new Guard(5, 2, Color.YELLOW, Color.GREEN,1));
+        this.pieceCollection[5][3]=(new Guard(5, 3, Color.YELLOW, Color.GREEN,1));
+        this.pieceCollection[5][4]=(new Guard(5, 4, Color.YELLOW, Color.GREEN,1));
+        this.pieceCollection[5][5]=(new Guard(5, 5, Color.YELLOW, Color.GREEN,1));
         this.setSize(700, 700);
         this.setVisible(true);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -30,38 +52,39 @@ public class GameBoard extends JFrame implements MouseListener {
 
 
     }
+
+
+
     @Override
     public void mouseClicked(MouseEvent e) {
+        Figure figure = (Figure) this.selectedPiece;
 
-            if (this.selectedPiece == null) {
-                OriginalRow = this.getBoardDimensionBasedOnCoordinates(e.getY());
-                OriginalCol = this.getBoardDimensionBasedOnCoordinates(e.getX());
-            }
+        int row = this.getBoardDimensionBasedOnCoordinates(e.getY());
+        int col = this.getBoardDimensionBasedOnCoordinates(e.getX());
 
-            int row = this.getBoardDimensionBasedOnCoordinates(e.getY());
-            int col = this.getBoardDimensionBasedOnCoordinates(e.getX());
+        if (this.selectedPiece != null) {
 
+            //Записва новите координати на фигурата, но фигурата оставя избрана.
+            //Не успях да разбера, защо се бъгва така.
+            int initialRow = figure.getRow();
+            int initialCol = figure.getCol();
 
+            figure.move(row, col);
 
-
+            this.pieceCollection[figure.getRow()][figure.getCol()] = this.selectedPiece;
             if (this.selectedPiece != null) {
-
-                Guard guard = (Guard) this.selectedPiece;
-                guard.move(row, col);
-                //TODO Записва новите координати на фигурата, но не я пуска!? Разбери защо!!!
-
-//                this.pieceCollection[row][col] = this.selectedPiece;
-//                this.pieceCollection[OriginalRow][OriginalCol] = null;
-
+                System.out.println("Piece was dropped");
                 this.selectedPiece = null;
-                this.repaint();
             }
+            this.pieceCollection[initialRow][initialCol] = null;
 
-            // check if piece is available
-            if (this.hasBoardPiece(row, col)) {
+            this.repaint();
+        }
 
-                this.selectedPiece = this.getBoardPiece(row, col);
-            }
+        // check if piece is available
+        if (this.hasBoardPiece(row, col)) {
+            this.selectedPiece = this.getBoardPiece(row, col);
+        }
 
 
     }
@@ -93,15 +116,11 @@ public class GameBoard extends JFrame implements MouseListener {
                 tile.render(g);
 
 
+                //Прави проверка дали има фигура и я render
                 if(this.hasBoardPiece(row, col)) {
-
-                    Guard guard = (Guard)this.getBoardPiece(row, col);
-                    guard.render(g);
-
-
-                }
-                King king = new King(row, col);
-                    king.render(g);
+                    Figure figure = (Figure) this.getBoardPiece(row, col);
+                    figure.render(g);
+               }
 
 
             }
@@ -109,6 +128,8 @@ public class GameBoard extends JFrame implements MouseListener {
         Point point = new Point(3, 3);
         point.render(g);
     }
+
+
 
 
     private Object getBoardPiece(int row, int col) {
